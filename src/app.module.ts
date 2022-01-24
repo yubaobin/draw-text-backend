@@ -7,8 +7,8 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { LoggingInterceptor } from './interceptors/logging/logging.interceptor'
 import { ValidationPipe } from './pipe/validation/validation.pipe'
 import { TransformInterceptor } from './interceptors/transform/transform.interceptor'
-import { TModule } from './modules/t/t.module';
-
+import { TextModule } from './modules/text/text.module'
+import { ImageModule } from './modules/image/image.module'
 @Module({
     imports: [
     // 配置加载配置文件
@@ -41,7 +41,8 @@ import { TModule } from './modules/t/t.module';
             }),
             inject: [ConfigService]
         }),
-        TModule
+        TextModule,
+        ImageModule
     ],
     controllers: [],
     providers: [
