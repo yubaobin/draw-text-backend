@@ -3,13 +3,11 @@ import { NestFactory } from '@nestjs/core'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { Logger } from '@nestjs/common'
 import helmet from 'helmet'
-
+import { ConfigService } from 'nestjs-config'
 import { AppModule } from './app.module'
 import { HttpExceptionFilter } from './filters/http-exception.filter'
 // import { TransformInterceptor } from './interceptors/transform/transform.interceptor';
 
-const PORT = process.env.PORT || 8080
-const PREFIX = process.env.PREFIX || '/'
 export const IS_DEV = process.env.NODE_ENV !== 'production'
 async function bootstrap () {
     const logger: Logger = new Logger('main.ts')
@@ -18,23 +16,24 @@ async function bootstrap () {
         // 开启日志级别打印
         logger: IS_DEV ? ['log', 'debug', 'error', 'warn'] : ['error', 'warn']
     })
+    const config: ConfigService = app.get(ConfigService)
+    const PORT = config.get('system.port') || 8080
+    const PREFIX = config.get('system.prefix') || '/'
     // 允许跨域请求
     app.enableCors()
     // 给请求添加prefix
     app.setGlobalPrefix(PREFIX)
-
     // 配置api文档信息(不是生产环境配置文档)
     if (IS_DEV) {
         const options = new DocumentBuilder()
-            .setTitle('权限系统管理  api文档')
-            .setDescription('权限系统管理  api接口文档')
+            .setTitle('api文档')
+            .setDescription('api接口文档')
             .addBearerAuth({ type: 'apiKey', in: 'header', name: 'token' })
             .setVersion('0.0.1')
             .build()
 
         const document = SwaggerModule.createDocument(app, options)
         SwaggerModule.setup(`${PREFIX}/docs`, app, document)
-        // 浏览器直接访问 http://localhost:5000/api-json
         SwaggerModule.setup('api', app, document)
     }
     // Web漏洞的

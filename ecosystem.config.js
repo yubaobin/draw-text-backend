@@ -27,11 +27,13 @@ module.exports = {
             },
             env_production: {
                 // 环境参数,当前指定为生产环境
-                NODE_ENV: 'production'
+                NODE_ENV: 'production',
+                DOTENV_CONFIG_PATH: '.env.production'
             },
             env_test: {
                 // 环境参数,当前为测试环境
-                NODE_ENV: 'test'
+                NODE_ENV: 'test',
+                DOTENV_CONFIG_PATH: '.env.test'
             }
         }
     ],

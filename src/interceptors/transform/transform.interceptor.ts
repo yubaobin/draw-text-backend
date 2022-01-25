@@ -2,10 +2,11 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { Observable } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { instanceToPlain } from 'class-transformer'
+import { ResponseVo } from '@/vo/response.vo'
 
 @Injectable()
 export class TransformInterceptor implements NestInterceptor {
-    intercept (_context: ExecutionContext, next: CallHandler): Observable<any> {
+    intercept (_context: ExecutionContext, next: CallHandler): Observable<ResponseVo<any>> {
         return next.handle().pipe(
             map((data: any) => {
                 return {
