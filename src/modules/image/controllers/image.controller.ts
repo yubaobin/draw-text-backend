@@ -1,11 +1,17 @@
 import { ImageListVo, ImageVo } from './vo/image.vo'
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Header, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, Query, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common'
 import { AuthGuard } from '@/guard/auth/auth.guard'
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { ApiAuth } from '@/decorators/api.auth'
 import { ImageService } from '../services/image.service'
 import { UpdateImageDto } from './dto/update.image.dto'
 import { ImageReqListDto } from './dto/image.req.dto'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { Response } from 'express'
+import { getContentType } from '@/utils/file'
+import { ImageDto } from './dto/image.dto'
+import { FileUploadDto } from './dto/fileupload.dto'
+import { ImageEntity } from '../entities/image.entity'
 
 @ApiTags('图片管理')
 @ApiBearerAuth()
@@ -19,7 +25,7 @@ export class ImageController {
     @ApiOkResponse({ type: UpdateImageDto, description: '创建图片返回值' })
     @Post()
     @HttpCode(HttpStatus.CREATED)
-    async createImage (@Body() imageDto: UpdateImageDto): Promise<string> {
+    async createImage (@Body() imageDto: UpdateImageDto): Promise<ImageEntity> {
         return await this.imageService.createImage(imageDto)
     }
 
@@ -58,5 +64,36 @@ export class ImageController {
     @Get('/listByPage')
     async accessListPage (@Query() imageReqDto: ImageReqListDto): Promise<ImageListVo> {
         return await this.imageService.imageListPage(imageReqDto)
+    }
+
+    @ApiOperation({ summary: '上传图片', description: '上传图片' })
+    @ApiOkResponse({ type: String, description: '图片路径' })
+    @Post('/upload')
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        description: 'List of cats',
+        type: FileUploadDto
+    })
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadFile (@UploadedFile() file: Express.Multer.File, @Body() imageDto: ImageDto): Promise<string> {
+        const filepath = await this.imageService.upload(file)
+        const imageData: ImageDto = {
+            fileurl: filepath,
+            cover: filepath,
+            type: imageDto.type
+        }
+        await this.imageService.createImage(imageData)
+        return filepath
+    }
+
+    @Header('cross-origin-resource-policy', 'cross-origin')
+    @Get('/download/:filename')
+    async downloadFile (@Param('filename') filename: string, @Res() res: Response) {
+        const file: any = await this.imageService.download(filename)
+        const contentType: string = getContentType(file.path)
+        res.set({
+            'Content-Type': contentType
+        })
+        file.pipe(res)
     }
 }
