@@ -9,7 +9,7 @@ import { ImageReqListDto } from '../controllers/dto/image.req.dto'
 import { PageEnum } from '@/enums/page.enum'
 import { ConfigService } from 'nestjs-config'
 import { getIpAddress } from '@/utils'
-import { checkFolder, getFileName, getFileSuffix } from '@/utils/file'
+import { checkFolder, deleteFile, getFileName, getFileSuffix } from '@/utils/file'
 import { createReadStream, createWriteStream, statSync } from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
@@ -55,8 +55,7 @@ export class ImageService {
         if (imageEntity) {
             const folder = this.getUploadPath()
             const fileurl = path.resolve(folder, getFileName(imageEntity.fileurl))
-            console.log('fileurl', fileurl)
-            // await deleteFile(fileurl)
+            await deleteFile(fileurl)
         }
         const result = await this.imageRepository.delete(id)
         if (result.affected) {
@@ -168,14 +167,15 @@ export class ImageService {
      * 分析
      * @param file 
      */
-    async analyze (file: Express.Multer.File): Promise<string> {
+    async analyze (file: Express.Multer.File, psm?: any): Promise<any> {
+        console.log('psm', psm)
         await worker.load()
-        await worker.loadLanguage('eng+chi_sim')
-        await worker.initialize('eng+chi_sim', tesseract.OEM.LSTM_ONLY)
+        await worker.loadLanguage('chi_sim')
+        await worker.initialize('chi_sim', tesseract.OEM.TESSERACT_LSTM_COMBINED)
         await worker.setParameters({
-            tessedit_pageseg_mode: tesseract.PSM.SINGLE_BLOCK
+            tessedit_pageseg_mode: psm || tesseract.PSM.SINGLE_WORD
         })
-        const { data: { text } } = await worker.recognize(file.buffer)
-        return text
+        const { data } = await worker.recognize(file.buffer)
+        return data.text
     }
 }

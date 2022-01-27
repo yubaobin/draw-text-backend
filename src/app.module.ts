@@ -3,7 +3,6 @@ import { ClassSerializerInterceptor, Module } from '@nestjs/common'
 import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core'
 import { ConfigModule, ConfigService } from 'nestjs-config'
 import { TypeOrmModule } from '@nestjs/typeorm'
-
 import { LoggingInterceptor } from './interceptors/logging/logging.interceptor'
 import { ValidationPipe } from './pipe/validation/validation.pipe'
 import { TransformInterceptor } from './interceptors/transform/transform.interceptor'

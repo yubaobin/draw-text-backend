@@ -12,6 +12,7 @@ import { getContentType } from '@/utils/file'
 import { ImageDto } from './dto/image.dto'
 import { FileUploadDto } from './dto/fileupload.dto'
 import { ImageEntity } from '../entities/image.entity'
+import { AnalyzeDto } from './dto/analyze.dto'
 
 @ApiTags('图片管理')
 @ApiBearerAuth()
@@ -91,7 +92,6 @@ export class ImageController {
     async downloadFile (@Param('filename') filename: string, @Res() res: Response) {
         try {
             const file: any = await this.imageService.download(filename)
-            console.log('====', file)
             const contentType: string = getContentType(file.path)
             res.set({
                 'Content-Type': contentType
@@ -107,11 +107,11 @@ export class ImageController {
     @Post('/analyze')
     @ApiConsumes('multipart/form-data')
     @ApiBody({
-        description: 'List of cats',
+        description: '解析图片',
         type: FileUploadDto
     })
     @UseInterceptors(FileInterceptor('file'))
-    async analyze (@UploadedFile() file: Express.Multer.File): Promise<string> {
-        return await this.imageService.analyze(file)
+    async analyze (@UploadedFile() file: Express.Multer.File, @Body() analyzeDto: AnalyzeDto): Promise<string> {
+        return await this.imageService.analyze(file, analyzeDto.type)
     }
 }
