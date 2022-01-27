@@ -9,11 +9,21 @@ import { ImageReqListDto } from '../controllers/dto/image.req.dto'
 import { PageEnum } from '@/enums/page.enum'
 import { ConfigService } from 'nestjs-config'
 import { getIpAddress } from '@/utils'
-import { checkFolder, getFileSuffix } from '@/utils/file'
-import { createReadStream, createWriteStream } from 'fs'
+import { checkFolder, getFileName, getFileSuffix } from '@/utils/file'
+import { createReadStream, createWriteStream, statSync } from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
 import { ImageDto } from '../controllers/dto/image.dto'
+import tesseract from 'tesseract.js'
+
+const dataPath = path.resolve(process.cwd(), 'traineddata')
+
+const worker = tesseract.createWorker({
+    cacheMethod: 'none', // refresh
+    langPath: dataPath,
+    logger: (m: any) => console.log(m)
+})
+
 @Injectable()
 export class ImageService {
     constructor (
@@ -22,6 +32,9 @@ export class ImageService {
         private readonly configService: ConfigService
     ) { }
 
+    getUploadPath (): string {
+        return path.resolve(process.cwd(), this.configService.get('system.uploadpath') || 'upload')
+    }
     /**
      * 新增图片
      * @param imageDto 
@@ -38,6 +51,13 @@ export class ImageService {
      * @param id 
      */
     async deleteImageById (id: number): Promise<string> {
+        const imageEntity: ImageEntity | undefined = await this.imageRepository.findOne(id)
+        if (imageEntity) {
+            const folder = this.getUploadPath()
+            const fileurl = path.resolve(folder, getFileName(imageEntity.fileurl))
+            console.log('fileurl', fileurl)
+            // await deleteFile(fileurl)
+        }
         const result = await this.imageRepository.delete(id)
         if (result.affected) {
             return '删除成功'
@@ -86,8 +106,8 @@ export class ImageService {
         return {
             data,
             total,
-            current,
-            size
+            current: parseInt(String(current)),
+            size: parseInt(String(size))
         }
     }
 
@@ -117,7 +137,7 @@ export class ImageService {
      * @param file 
      */
     async upload (file: Express.Multer.File): Promise<string> {
-        const folder = path.resolve(process.cwd(), this.configService.get('system.uploadpath') || 'upload')
+        const folder = this.getUploadPath()
         try {
             await checkFolder(folder)
             const suffix = getFileSuffix(file.originalname)
@@ -133,9 +153,29 @@ export class ImageService {
      * 下载
      * @param filename
      */
-    async download (filename: string): Promise<Readable> {
-        const folder = path.resolve(process.cwd(), this.configService.get('system.uploadpath') || 'upload')
-        const file = createReadStream(path.resolve(folder, filename))
-        return new StreamableFile(file).getStream()
+    async download (filename: string): Promise<Readable | null> {
+        const folder = this.getUploadPath()
+        const fileStat = statSync(path.resolve(folder, filename))
+        if (fileStat.isFile()) {
+            const file = createReadStream(path.resolve(folder, filename))
+            return new StreamableFile(file).getStream()
+        } else {
+            return null
+        }
+    }
+
+    /**
+     * 分析
+     * @param file 
+     */
+    async analyze (file: Express.Multer.File): Promise<string> {
+        await worker.load()
+        await worker.loadLanguage('eng+chi_sim')
+        await worker.initialize('eng+chi_sim', tesseract.OEM.LSTM_ONLY)
+        await worker.setParameters({
+            tessedit_pageseg_mode: tesseract.PSM.SINGLE_BLOCK
+        })
+        const { data: { text } } = await worker.recognize(file.buffer)
+        return text
     }
 }

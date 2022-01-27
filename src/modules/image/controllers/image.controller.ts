@@ -89,11 +89,29 @@ export class ImageController {
     @Header('cross-origin-resource-policy', 'cross-origin')
     @Get('/download/:filename')
     async downloadFile (@Param('filename') filename: string, @Res() res: Response) {
-        const file: any = await this.imageService.download(filename)
-        const contentType: string = getContentType(file.path)
-        res.set({
-            'Content-Type': contentType
-        })
-        file.pipe(res)
+        try {
+            const file: any = await this.imageService.download(filename)
+            console.log('====', file)
+            const contentType: string = getContentType(file.path)
+            res.set({
+                'Content-Type': contentType
+            })
+            file.pipe(res)   
+        } catch (error) {
+            res.send('')
+        }
+    }
+
+    @ApiOperation({ summary: '解析图片', description: '解析图片' })
+    @ApiOkResponse({ type: String, description: '图片路径' })
+    @Post('/analyze')
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        description: 'List of cats',
+        type: FileUploadDto
+    })
+    @UseInterceptors(FileInterceptor('file'))
+    async analyze (@UploadedFile() file: Express.Multer.File): Promise<string> {
+        return await this.imageService.analyze(file)
     }
 }

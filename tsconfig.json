@@ -32,6 +32,7 @@
   },
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "./node_modules/tesseract.js/src/index.d.ts"
   ]
 }

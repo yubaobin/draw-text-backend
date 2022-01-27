@@ -34,15 +34,20 @@ import fs from 'fs'
  * 删除文件
  */
 export function deleteFile (filepath: string) {
-    return new Promise((resolve: any, reject: any) => {
-        fs.unlink(filepath, function (err: Error | null) {
-            if (err) {
-                reject(err)
-            } else {
-                resolve
-            }
+    return new Promise((resolve: any) => {
+        fs.unlink(filepath, function () {
+            resolve()
         })
     })
+}
+
+/**
+ * 获取文件名
+ * @param url 
+ * @returns 
+ */
+export function getFileName (fileurl: string): string {
+    return fileurl.substring(fileurl.lastIndexOf('/') + 1)
 }
 
 /**
