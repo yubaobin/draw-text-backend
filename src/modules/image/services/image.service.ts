@@ -168,7 +168,6 @@ export class ImageService {
      * @param file 
      */
     async analyze (file: Express.Multer.File, psm?: any): Promise<any> {
-        console.log('psm', psm)
         await worker.load()
         await worker.loadLanguage('chi_sim')
         await worker.initialize('chi_sim', tesseract.OEM.TESSERACT_LSTM_COMBINED)
