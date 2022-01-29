@@ -17,4 +17,12 @@ export class TextEntity extends SharedEntity {
         comment: '文字'
     })
     text: string
+
+    @Column({
+        type: 'varchar',
+        length: 255,
+        name: 'background',
+        comment: '背景'
+    })
+    background: string
 }

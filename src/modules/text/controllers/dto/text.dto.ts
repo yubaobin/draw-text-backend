@@ -12,4 +12,8 @@ export class TextDto {
     @ApiPropertyOptional({ description: '文字' })
     @IsOptional()
     readonly text?: string
+
+    @ApiPropertyOptional({ description: '背景' })
+    @IsOptional()
+    readonly background?: string
 }

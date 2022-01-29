@@ -34,7 +34,7 @@ export function getIpAddress (): string {
             for (let i = 0; i < iface.length; i++) {
                 let { family, address, internal } = iface[i]
 
-                if (family === 'IPv4' && address !== '127.0.0.1' && !internal) {
+                if (family === 'IPv4' && address !== '127.0.0.1' && internal) {
                     result = address
                 }
             }
