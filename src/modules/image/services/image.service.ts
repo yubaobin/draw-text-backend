@@ -142,7 +142,7 @@ export class ImageService {
             const suffix = getFileSuffix(file.originalname)
             const filename = `${Date.now()}${suffix}`
             const filepath = await this.writeFile(file, folder, filename)
-            return filepath
+            return Promise.resolve(filepath)
         } catch (err) {
             throw new HttpException(err.message, HttpStatus.OK)
         }

@@ -8,6 +8,7 @@ import { ValidationPipe } from './pipe/validation/validation.pipe'
 import { TransformInterceptor } from './interceptors/transform/transform.interceptor'
 import { TextModule } from './modules/text/text.module'
 import { ImageModule } from './modules/image/image.module'
+import { SharedModule } from './modules/shared/shared.module'
 
 const envPath = path.resolve(process.cwd(),  process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env')
 @Module({
@@ -46,8 +47,10 @@ const envPath = path.resolve(process.cwd(),  process.env.NODE_ENV ? `.env.${proc
             inject: [ConfigService]
         }),
         TextModule,
-        ImageModule
+        ImageModule,
+        SharedModule
     ],
+    controllers: [],
     providers: [
         {
             provide: APP_INTERCEPTOR,
