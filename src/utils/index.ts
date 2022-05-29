@@ -42,3 +42,16 @@ export function getIpAddress (): string {
     }
     return `http://${result}`
 }
+
+/**
+ * 延时
+ * @param time 
+ * @returns 
+ */
+export function delay (time: number = 0) {
+    return new Promise((resolve: any) => {
+        setTimeout(() => {
+            resolve()
+        }, time)
+    })
+}

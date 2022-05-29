@@ -9,7 +9,6 @@ import { ImageReqListDto } from './dto/image.req.dto'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { Response } from 'express'
 import { getContentType } from '@/utils/file'
-import { ImageDto } from './dto/image.dto'
 import { FileUploadDto } from './dto/fileupload.dto'
 import { ImageEntity } from '../entities/image.entity'
 import { AnalyzeDto } from './dto/analyze.dto'
@@ -77,14 +76,8 @@ export class ImageController {
     })
     @UseInterceptors(FileInterceptor('file'))
     @HttpCode(HttpStatus.OK)
-    async uploadFile (@UploadedFile() file: Express.Multer.File, @Body() imageDto: ImageDto): Promise<string> {
+    async uploadFile (@UploadedFile() file: Express.Multer.File): Promise<string> {
         const filepath = await this.imageService.upload(file)
-        const imageData: ImageDto = {
-            fileurl: filepath,
-            cover: filepath,
-            type: imageDto.type
-        }
-        await this.imageService.createImage(imageData)
         return filepath
     }
 
