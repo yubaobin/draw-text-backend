@@ -76,6 +76,7 @@ export class ImageController {
         type: FileUploadDto
     })
     @UseInterceptors(FileInterceptor('file'))
+    @HttpCode(HttpStatus.OK)
     async uploadFile (@UploadedFile() file: Express.Multer.File, @Body() imageDto: ImageDto): Promise<string> {
         const filepath = await this.imageService.upload(file)
         const imageData: ImageDto = {
