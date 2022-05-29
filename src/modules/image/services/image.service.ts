@@ -35,6 +35,9 @@ export class ImageService {
     getUploadPath (): string {
         return path.resolve(process.cwd(), this.configService.get('system.uploadpath') || 'upload')
     }
+    getUploadIp (): string {
+        return this.configService.get('system.uploadip') || getIpAddress()
+    }
     /**
      * 新增图片
      * @param imageDto 
@@ -121,7 +124,7 @@ export class ImageService {
                 if (err) {
                     reject(err)
                 } else {
-                    const ip = getIpAddress()
+                    const ip = this.getUploadIp()
                     const prefix = this.configService.get('system.prefix')
                     let configPort = this.configService.get('system.port')
                     configPort = configPort ? `:${configPort}` : ''
