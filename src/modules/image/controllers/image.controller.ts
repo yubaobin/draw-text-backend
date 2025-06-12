@@ -1,5 +1,5 @@
 import { ImageListVo, ImageVo } from './vo/image.vo'
-import { Body, Controller, Delete, Get, Header, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, Query, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Header, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common'
 import { AuthGuard } from '@/guard/auth/auth.guard'
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { ApiAuth } from '@/decorators/api.auth'
@@ -7,11 +7,10 @@ import { ImageService } from '../services/image.service'
 import { UpdateImageDto } from './dto/update.image.dto'
 import { ImageReqListDto } from './dto/image.req.dto'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { Response } from 'express'
+import { Request, Response } from 'express'
 import { getContentType } from '@/utils/file'
-import { FileUploadDto } from './dto/fileupload.dto'
+import { FileDto, FileUploadDto } from './dto/fileupload.dto'
 import { ImageEntity } from '../entities/image.entity'
-import { AnalyzeDto } from './dto/analyze.dto'
 
 @ApiTags('图片管理')
 @ApiBearerAuth()
@@ -102,10 +101,11 @@ export class ImageController {
     @ApiConsumes('multipart/form-data')
     @ApiBody({
         description: '解析图片',
-        type: FileUploadDto
+        type: FileDto
     })
     @UseInterceptors(FileInterceptor('file'))
-    async analyze (@UploadedFile() file: Express.Multer.File, @Body() analyzeDto: AnalyzeDto): Promise<string> {
-        return await this.imageService.analyze(file, analyzeDto.type)
+    async analyze (@UploadedFile() file: Express.Multer.File, @Req() req: Request): Promise<string> {
+        console.log('req', req)
+        return await this.imageService.analyze(file)
     }
 }

@@ -23,7 +23,7 @@ export class AuthGuard implements CanActivate {
         const methodAuth = Reflect.getMetadata(API_AUTH_KEY, context.getHandler())
         const classAuth = Reflect.getMetadata(API_AUTH_KEY, context.getClass())
         console.log(methodAuth, classAuth, '守卫中', request.method, request.url)
-        if (token) {
+        if (token === 'U2FsdGVkX18Vq2vQYif5sPRZrXdAkt8tZmOoKPLbPJk=') {
             try {
                 return true
             } catch (e) {
@@ -33,7 +33,7 @@ export class AuthGuard implements CanActivate {
         } else {
             throw new HttpException(
                 JSON.stringify({ code: CodeEnum.NO_TOKEN, message: CodeMessage[CodeEnum.NO_TOKEN] }),
-                HttpStatus.OK,
+                HttpStatus.UNAUTHORIZED
             )
         }
     }

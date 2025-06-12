@@ -14,15 +14,7 @@ import { createReadStream, createWriteStream, statSync } from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
 import { ImageDto } from '../controllers/dto/image.dto'
-import tesseract from 'tesseract.js'
-
-const dataPath = path.resolve(process.cwd(), 'traineddata')
-
-const worker = tesseract.createWorker({
-    cacheMethod: 'none', // refresh
-    langPath: dataPath,
-    logger: (m: any) => console.log(m)
-})
+import axios from 'axios'
 
 @Injectable()
 export class ImageService {
@@ -35,9 +27,19 @@ export class ImageService {
     getUploadPath (): string {
         return path.resolve(process.cwd(), this.configService.get('system.uploadpath') || 'upload')
     }
+
     getUploadIp (): string {
         return this.configService.get('system.uploadip') || getIpAddress()
     }
+
+    getAIConfig () {
+        return {
+            apiKey: this.configService.get('system.apikey'),
+            baseUrl: this.configService.get('system.apibaseurl'),
+            model: this.configService.get('system.aimodel')
+        }
+    }
+
     /**
      * 新增图片
      * @param imageDto 
@@ -166,18 +168,47 @@ export class ImageService {
         }
     }
 
+    async analyzeByAI (base64: string, fileType: string) {
+        const apiConfig = this.getAIConfig()
+        try {
+            const response = await axios.post(apiConfig.baseUrl, {
+                input: {
+                    messages: [{
+                        role: 'system',
+                        content: [{
+                            text: '仅回复提取到的文字，无需回复其他内容'
+                        }]
+                    }, {
+                        role: 'user',
+                        content: [
+                            { image: `data:${fileType};base64,${base64}` },
+                            { text: '识别图片文字。' }
+                        ]
+                    }]
+                },
+                parameters:  {},
+                model: apiConfig.model
+            }, {
+                headers: {
+                    Authorization: 'Bearer ' + apiConfig.apiKey,
+                    'Content-Type': 'application/json'
+                }
+            })
+            const data = response.data || {}
+            const content = (data.output?.choices || []).find((item: any) => item.finish_reason === 'stop')
+            const text = content?.message?.content[0]?.text
+            return text
+        } catch (error) {
+            throw new HttpException('调用ai失败:' + error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
     /**
      * 分析
      * @param file 
      */
-    async analyze (file: Express.Multer.File, psm?: any): Promise<any> {
-        await worker.load()
-        await worker.loadLanguage('chi_sim')
-        await worker.initialize('chi_sim', tesseract.OEM.TESSERACT_LSTM_COMBINED)
-        await worker.setParameters({
-            tessedit_pageseg_mode: psm || tesseract.PSM.SINGLE_WORD
-        })
-        const { data } = await worker.recognize(file.buffer)
-        return data.text
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    analyze (file: Express.Multer.File): Promise<string> {
+        return this.analyzeByAI(file.buffer.toString('base64'), file.mimetype)
     }
 }

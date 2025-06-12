@@ -2,10 +2,12 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import { IsEnum, IsOptional } from 'class-validator'
 
-export class FileUploadDto {
+export class FileDto {
     @ApiProperty({ type: 'string', format: 'binary' })
     file: Express.Multer.File
+}
 
+export class FileUploadDto extends FileDto {
     @ApiPropertyOptional({
         description: '图片类型, 节日: 1, 浪漫:2, 心情: 3',
         enum: [1, 2, 3]
