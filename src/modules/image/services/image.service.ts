@@ -176,13 +176,13 @@ export class ImageService {
                     messages: [{
                         role: 'system',
                         content: [{
-                            text: '仅回复提取到的文字，无需回复其他内容'
+                            text: '你是一位语文老师，图片都是手写的文字，你需要根据笔划识别图中的文字，只需回复识别的文字，不需要回复其他内容。'
                         }]
                     }, {
                         role: 'user',
                         content: [
                             { image: `data:${fileType};base64,${base64}` },
-                            { text: '识别图片文字。' }
+                            { text: '识别图中写的文字。' }
                         ]
                     }]
                 },
