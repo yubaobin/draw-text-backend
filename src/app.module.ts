@@ -9,6 +9,7 @@ import { TransformInterceptor } from './interceptors/transform/transform.interce
 import { TextModule } from './modules/text/text.module'
 import { ImageModule } from './modules/image/image.module'
 import { SharedModule } from './modules/shared/shared.module'
+import { CollectionProjectModule } from './modules/collectionProject/collectionProject.module'
 
 const envPath = path.resolve(process.cwd(),  process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env')
 @Module({
@@ -48,7 +49,8 @@ const envPath = path.resolve(process.cwd(),  process.env.NODE_ENV ? `.env.${proc
         }),
         TextModule,
         ImageModule,
-        SharedModule
+        SharedModule,
+        CollectionProjectModule
     ],
     controllers: [],
     providers: [

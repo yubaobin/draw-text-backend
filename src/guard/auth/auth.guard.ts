@@ -8,13 +8,29 @@ import {
 } from '@nestjs/common'
 import { getUrlQuery } from '@/utils'
 import { CodeEnum, CodeMessage } from '@/enums/code.enum'
-import { API_AUTH_KEY } from '@/constants'
+import { API_AUTH_KEY, IS_PUBLIC_KEY } from '@/constants'
+import { Reflector } from '@nestjs/core'
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-    constructor () { }
+    constructor (private reflector: Reflector) { }
 
     async canActivate (context: ExecutionContext): Promise<boolean> {
+        /**
+         * 接口白名单
+         * import { Public } from '@/decorators/api.auth'
+         * @Public
+         * function xxx 
+         */
+        const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+            context.getHandler(),
+            context.getClass()
+        ])
+
+        if (isPublic) {
+            return true
+        }
+
         const request = context.switchToHttp().getRequest()
         const token = context.switchToRpc().getData().headers.token ||
             context.switchToHttp().getRequest().body.token ||

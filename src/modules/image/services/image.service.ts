@@ -19,7 +19,7 @@ import axios from 'axios'
 @Injectable()
 export class ImageService {
     constructor (
-        @InjectRepository(ImageEntity)
+        @(InjectRepository(ImageEntity) as any)
         private readonly imageRepository: Repository<ImageEntity>,
         private readonly configService: ConfigService
     ) { }
